@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Lab | Threat Hunting Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#1a56db;--brand-dark:#1341a8;--brand-light:#e8f0fe;--brand-mid:#93b4f8;
+  --success:#0d7a3e;--success-bg:#ecfdf3;--success-border:#86efac;
+  --warn:#92400e;--warn-bg:#fffbeb;--warn-border:#fcd34d;
+  --danger:#991b1b;--danger-bg:#fef2f2;--danger-border:#fca5a5;
+  --info:#1e40af;--info-bg:#eff6ff;--info-border:#93c5fd;
+  --purple:#6d28d9;--purple-bg:#f5f3ff;--purple-border:#c4b5fd;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;
+  --gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;
+  --gray-800:#1f2937;--gray-900:#111827;
+  --code-bg:#0f172a;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+  --radius:8px;--radius-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,0.08);
+}
+html{scroll-behavior:smooth}
+body{background:var(--gray-50);color:var(--gray-800);font-family:var(--sans);font-size:15px;line-height:1.6}
+.topnav{background:#fff;border-bottom:1px solid var(--gray-200);height:60px;display:flex;align-items:center;padding:0 2rem;position:sticky;top:0;z-index:200;box-shadow:var(--shadow)}
+.topnav-brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.brand-icon{width:32px;height:32px;background:var(--success);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.brand-text{font-size:15px;font-weight:600;color:var(--gray-900)}
+.topnav-right{margin-left:auto;display:flex;align-items:center;gap:1rem}
+.nav-score{font-size:13px;color:var(--gray-600)}
+.nav-score strong{color:var(--success);font-weight:600}
+.nav-badge{background:var(--success-bg);color:var(--success);font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--success-border)}
+.live-chip{background:var(--danger-bg);color:var(--danger);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid var(--danger-border);display:flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--danger);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.layout{display:flex;min-height:calc(100vh - 60px)}
+.sidebar{width:260px;background:#fff;border-right:1px solid var(--gray-200);flex-shrink:0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:1.5rem 0}
+.sidebar-section{margin-bottom:1.5rem}
+.sidebar-heading{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-400);padding:0 1.25rem;margin-bottom:8px}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:8px 1.25rem;font-size:13px;cursor:pointer;color:var(--gray-600);transition:all 0.15s;border-left:3px solid transparent}
+.sidebar-item:hover{background:var(--gray-50);color:var(--gray-900)}
+.sidebar-item.active{background:var(--success-bg);color:var(--success);border-left-color:var(--success);font-weight:500}
+.sidebar-item.done .si-num{background:var(--success-bg);color:var(--success)}
+.si-num{width:22px;height:22px;border-radius:50%;background:var(--gray-100);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gray-500)}
+.sidebar-item.active .si-num{background:var(--success);color:#fff}
+.si-label{flex:1;line-height:1.3}
+.si-sub{font-size:10px;color:var(--gray-400);font-weight:400}
+.sidebar-progress{padding:0 1.25rem;margin-bottom:1.5rem}
+.sp-label{font-size:12px;color:var(--gray-500);margin-bottom:6px;display:flex;justify-content:space-between}
+.sp-track{height:6px;background:var(--gray-100);border-radius:3px;overflow:hidden}
+.sp-fill{height:6px;background:var(--success);border-radius:3px;transition:width 0.4s}
+.content{flex:1;padding:2rem;max-width:960px;min-width:0}
+.page-header{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.5rem 2rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.ph-eyebrow{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--success);margin-bottom:6px}
+.ph-title{font-size:22px;font-weight:600;color:var(--gray-900);margin-bottom:4px}
+.ph-sub{font-size:14px;color:var(--gray-500)}
+.ph-meta{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.ph-tag{font-size:12px;color:var(--gray-600);background:var(--gray-100);padding:4px 10px;border-radius:20px}
+.mitre-chip{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:12px;border-bottom:1px solid var(--gray-100)}
+.card-title{font-size:15px;font-weight:600;color:var(--gray-900)}
+.step-pill{font-size:11px;font-weight:500;background:var(--success-bg);color:var(--success);padding:3px 10px;border-radius:20px;border:1px solid var(--success-border)}
+.card-body{font-size:14px;color:var(--gray-600);line-height:1.75}
+.card-body strong{color:var(--gray-800);font-weight:600}
+code{font-family:var(--mono);font-size:12px;background:var(--gray-100);padding:1px 5px;border-radius:4px;color:var(--brand-dark)}
+.kql-ref{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem}
+.kql-ref-header{padding:10px 14px;background:var(--gray-100);border-bottom:1px solid var(--gray-200);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500)}
+.kql-table{width:100%;border-collapse:collapse;font-size:13px}
+.kql-table td{padding:8px 14px;border-bottom:1px solid var(--gray-200);vertical-align:top}
+.kql-table tr:last-child td{border-bottom:none}
+.kql-table td:first-child{font-family:var(--mono);font-size:11px;color:var(--brand-dark);font-weight:500;width:48%;white-space:nowrap}
+.kql-table td:last-child{color:var(--gray-600)}
+.ui-walkthrough{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem}
+.ui-wt-header{padding:10px 14px;background:var(--gray-100);border-bottom:1px solid var(--gray-200);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500)}
+.ui-step{display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid var(--gray-200)}
+.ui-step:last-child{border-bottom:none}
+.ui-step-num{width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ui-step-body{font-size:13px;color:var(--gray-600);line-height:1.6}
+.ui-step-body strong{color:var(--gray-800);font-weight:500}
+.ui-step-path{font-family:var(--mono);font-size:11px;background:var(--brand-light);color:var(--brand-dark);padding:3px 8px;border-radius:4px;display:inline-block;margin-top:4px}
+.mitre-ref{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:var(--radius);padding:14px;margin-bottom:1.25rem}
+.mitre-ref-title{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--purple);margin-bottom:10px}
+.mitre-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;font-size:13px}
+.mitre-row:last-child{margin-bottom:0}
+.mitre-id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--purple);background:#fff;border:1px solid var(--purple-border);padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.mitre-desc{color:var(--gray-600);line-height:1.5}
+.mitre-desc strong{color:var(--gray-800);font-weight:500}
+
+/* ── WAZUH TYPING INTERFACE ── */
+.wazuh-sim{border:1px solid var(--gray-300);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.25rem;box-shadow:var(--shadow-md)}
+.wazuh-chrome{background:#1e293b;padding:10px 16px;display:flex;align-items:center;gap:6px}
+.wdot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.wazuh-topbar{background:#0f172a;border-bottom:1px solid #1e293b;padding:8px 16px;display:flex;align-items:center;gap:10px}
+.wazuh-logo-text{font-family:var(--mono);font-size:12px;font-weight:500;color:#38bdf8;letter-spacing:0.05em}
+.wazuh-slash{color:#334155;font-family:var(--mono);font-size:12px}
+.wazuh-path{font-family:var(--mono);font-size:12px;color:#94a3b8}
+.wazuh-agent-chip{font-family:var(--mono);font-size:10px;background:rgba(56,189,248,0.1);color:#38bdf8;padding:2px 8px;border-radius:10px;border:1px solid rgba(56,189,248,0.2);margin-left:auto}
+.wazuh-live-chip{font-family:var(--mono);font-size:10px;background:rgba(74,222,128,0.1);color:#4ade80;padding:2px 8px;border-radius:10px;border:1px solid rgba(74,222,128,0.3)}
+.wazuh-tabs{background:#0f172a;border-bottom:1px solid #1e293b;padding:0 16px;display:flex}
+.wazuh-tab{font-size:12px;padding:8px 16px;color:#475569;cursor:default;border-bottom:2px solid transparent;font-family:var(--mono)}
+.wazuh-tab.wt-active{color:#38bdf8;border-bottom-color:#38bdf8}
+.wazuh-body{background:#0f172a;padding:16px}
+.query-block{background:#0a1628;border:1px solid #1e293b;border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.query-block:last-child{margin-bottom:0}
+.qb-task{font-size:13px;color:#cbd5e1;font-weight:500;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.qb-num{font-size:10px;font-family:var(--mono);background:#1e293b;color:#475569;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.qb-where{font-size:11px;color:#475569;font-family:var(--mono);margin-bottom:10px}
+.hint-btn{background:none;border:1px solid #1e293b;border-radius:5px;padding:5px 10px;font-size:11px;font-family:var(--mono);color:#475569;cursor:pointer;transition:all 0.15s;margin-bottom:8px}
+.hint-btn:hover{border-color:#38bdf8;color:#38bdf8}
+.hint-content{background:#0a2040;border:1px solid rgba(56,189,248,0.2);border-radius:5px;padding:10px 12px;font-size:12px;color:#7dd3fc;line-height:1.6;margin-bottom:8px;display:none;font-family:var(--mono)}
+.hint-content.hc-vis{display:block}
+
+/* typing area — no paste allowed */
+.query-row{display:flex;gap:8px;align-items:flex-start}
+.query-input{flex:1;background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px 12px;font-family:var(--mono);font-size:12px;color:#e2e8f0;outline:none;resize:none;min-height:40px;line-height:1.5;transition:border-color 0.15s;caret-color:#38bdf8}
+.query-input::placeholder{color:#334155}
+.query-input:focus{border-color:#38bdf8}
+.query-input.qi-err{border-color:#f87171}
+.query-input.qi-ok{border-color:#4ade80}
+.run-btn{background:#1d4ed8;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-family:var(--mono);color:#fff;cursor:pointer;white-space:nowrap;font-weight:500;transition:background 0.15s}
+.run-btn:hover{background:#2563eb}
+
+/* validation feedback */
+.qb-err{font-family:var(--mono);font-size:11px;color:#f87171;margin-top:6px;padding:8px 10px;background:rgba(248,113,113,0.08);border-radius:4px;border-left:2px solid #f87171;display:none;line-height:1.6}
+.qb-err strong{color:#fca5a5;font-weight:600}
+
+/* correct query feedback */
+.qb-ok{font-size:12px;color:#86efac;margin-top:8px;padding:10px 12px;background:rgba(74,222,128,0.08);border-radius:4px;border-left:2px solid #4ade80;display:none;line-height:1.65;font-family:var(--sans)}
+.qb-ok strong{color:#4ade80;font-weight:600}
+.qb-ok .now-run{margin-top:6px;font-size:11px;font-family:var(--mono);color:#475569}
+
+/* paste blocker notice */
+.no-paste-notice{font-family:var(--mono);font-size:10px;color:#334155;margin-top:4px;text-align:right}
+
+/* QUESTIONS */
+.question-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:var(--shadow)}
+.qc-label{font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-400);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.qc-type{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
+.qc-type-live{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border)}
+.qc-type-mitre{background:var(--purple-bg);color:var(--purple)}
+.qc-text{font-size:14px;font-weight:500;color:var(--gray-800);margin-bottom:12px;line-height:1.5;padding:10px 12px;background:var(--gray-50);border-radius:var(--radius);border-left:3px solid var(--success)}
+.choices{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.choice{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius);padding:10px 14px;font-size:13px;cursor:pointer;text-align:left;color:var(--gray-700);transition:all 0.15s;display:flex;align-items:center;gap:10px}
+.choice:hover:not([disabled]){border-color:var(--brand-mid);background:var(--brand-light);color:var(--brand-dark)}
+.choice-letter{width:24px;height:24px;border-radius:50%;background:var(--gray-200);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gray-600)}
+.choice.correct{border-color:var(--success-border);background:var(--success-bg);color:var(--success)}
+.choice.correct .choice-letter{background:var(--success);color:#fff}
+.choice.wrong{border-color:var(--danger-border);background:var(--danger-bg);color:#991b1b}
+.choice.wrong .choice-letter{background:#991b1b;color:#fff}
+.feedback{font-size:13px;padding:10px 14px;border-radius:var(--radius);line-height:1.65;margin-bottom:10px}
+.feedback.correct{background:var(--success-bg);border:1px solid var(--success-border);color:var(--success)}
+.feedback.wrong{background:var(--danger-bg);border:1px solid var(--danger-border);color:#991b1b}
+.btn{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--gray-300);border-radius:var(--radius);padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;color:var(--gray-700);font-family:var(--sans);transition:all 0.15s}
+.btn:hover{border-color:var(--gray-400);background:var(--gray-50)}
+.btn-primary{background:var(--success);border-color:var(--success);color:#fff}
+.btn-primary:hover{background:#065f2e;border-color:#065f2e;color:#fff}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--gray-100)}
+.step-progress{display:flex;align-items:center;margin-bottom:1.5rem}
+.step-node{display:flex;flex-direction:column;align-items:center;flex:1}
+.step-circle{width:28px;height:28px;border-radius:50%;border:2px solid var(--gray-200);background:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;color:var(--gray-400);position:relative;z-index:1}
+.step-node.sn-done .step-circle{background:var(--success);border-color:var(--success);color:#fff}
+.step-node.sn-active .step-circle{background:var(--success);border-color:var(--success);color:#fff;box-shadow:0 0 0 4px rgba(13,122,62,0.12)}
+.step-node-label{font-size:9px;color:var(--gray-400);margin-top:3px;text-align:center}
+.step-node.sn-active .step-node-label{color:var(--success);font-weight:600}
+.step-node.sn-done .step-node-label{color:var(--success)}
+.step-line{flex:1;height:2px;background:var(--gray-200);margin-top:-15px}
+.step-line.sl-done{background:var(--success)}
+.home-hero{background:linear-gradient(135deg,#065f46 0%,#0d7a3e 60%,#16a34a 100%);border-radius:var(--radius-lg);padding:3rem 2.5rem;margin-bottom:1.5rem;color:#fff;position:relative;overflow:hidden}
+.home-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:280px;height:280px;background:rgba(255,255,255,0.04);border-radius:50%}
+.hh-eyebrow{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:10px}
+.hh-title{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;line-height:1.2;margin-bottom:10px}
+.hh-sub{font-size:14px;color:rgba(255,255,255,0.75);max-width:500px;line-height:1.7;margin-bottom:1.5rem}
+.setup-steps{display:flex;flex-direction:column;gap:10px}
+.setup-step{background:rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start}
+.ss-num{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.2);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ss-body{font-size:13px;color:rgba(255,255,255,0.9);line-height:1.5}
+.ss-body strong{color:#fff;font-weight:600}
+.ss-code{font-family:var(--mono);font-size:11px;background:rgba(0,0,0,0.3);padding:3px 8px;border-radius:4px;color:#4ade80;display:inline-block;margin-top:4px}
+.scenario-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem}
+.scenario-card{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;cursor:pointer;transition:all 0.2s;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.scenario-card:hover{border-color:#86efac;box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.scenario-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gray-200)}
+.scenario-card.sc-done::before{background:var(--success)}
+.sc-num{font-size:10px;font-weight:600;color:var(--gray-400);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
+.sc-title{font-size:14px;font-weight:600;color:var(--gray-800);margin-bottom:8px;line-height:1.3}
+.sc-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;margin-bottom:8px;display:inline-block}
+.sc-badge-red{background:var(--danger-bg);color:#991b1b;border:1px solid var(--danger-border)}
+.sc-badge-amber{background:var(--warn-bg);color:#92400e;border:1px solid var(--warn-border)}
+.sc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--gray-100);font-size:11px}
+.ss-done{color:var(--success);font-weight:500}
+.ss-start{color:var(--brand);font-weight:500}
+.split-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.alert-live-reminder{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:var(--radius);padding:8px 14px;font-size:12px;color:#f87171;margin-bottom:1rem;font-family:var(--mono)}
+.alert-live-reminder strong{color:#fca5a5}
+.complete-hero{background:linear-gradient(135deg,#065f46 0%,#0d7a3e 100%);border-radius:var(--radius-lg);padding:3rem 2.5rem;text-align:center;color:#fff;margin-bottom:1.5rem}
+.complete-score{font-size:72px;font-weight:700;line-height:1;margin:1rem 0}
+@media(max-width:860px){.sidebar{display:none}.content{padding:1rem}.split-layout{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="topnav-brand" onclick="showHome()">
+    <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div><div class="brand-text">Threat Hunting — Live Lab</div><div style="font-size:10px;color:var(--gray-400)">Real Wazuh Environment · https://localhost</div></div>
+  </div>
+  <div class="topnav-right">
+    <div class="live-chip"><div class="live-dot"></div>LIVE</div>
+    <div class="nav-score">Score: <strong id="nav-score">0 / 0</strong></div>
+    <div class="nav-badge" id="nav-pct">0%</div>
+  </div>
+</nav>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-progress">
+      <div class="sp-label"><span>Lab Progress</span><span id="sb-pct">0%</span></div>
+      <div class="sp-track"><div class="sp-fill" id="sb-fill" style="width:0%"></div></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Navigation</div>
+      <div class="sidebar-item active" id="sb-home" onclick="showHome()">
+        <div class="si-num"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+        <div class="si-label">Dashboard</div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Scenarios</div>
+      <div id="sb-scenarios"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Reference</div>
+      <div class="sidebar-item" onclick="showReference()">
+        <div class="si-num"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <div class="si-label">KQL + MITRE Reference</div>
+      </div>
+    </div>
+  </aside>
+  <main class="content" id="main-content"></main>
+</div>
+<script>
+// ═══════════════════════════════════
+// KQL VALIDATOR — same engine as web trainer
+// ═══════════════════════════════════
+function normKQL(q){return q.trim().replace(/\s+/g,' ').replace(/\s*:\s*/g,':').replace(/\s+AND\s+/gi,' AND ').replace(/\s+OR\s+/gi,' OR ');}
+
+function validateKQL(q){
+  if(!q.trim())return{ok:false,msg:'Enter a KQL query before running.'};
+  var n=normKQL(q);
+  if(!n.includes(':'))return{ok:false,msg:'<strong>Syntax error:</strong> KQL requires field:value syntax. Example: <code>agent.name:WEB-APP01</code>'};
+  if((n.match(/"/g)||[]).length%2!==0)return{ok:false,msg:'<strong>Syntax error:</strong> Unbalanced quotation marks in query.'};
+  if(/\s=\s/.test(n))return{ok:false,msg:'<strong>Syntax error:</strong> Use colon notation, not equals signs. Example: <code>rule.id:5710</code> not <code>rule.id = 5710</code>'};
+  if(/^AND |^OR | AND$| OR$/.test(n))return{ok:false,msg:'<strong>Syntax error:</strong> Query cannot start or end with AND or OR.'};
+  if(/ AND AND | OR OR /.test(n))return{ok:false,msg:'<strong>Syntax error:</strong> Duplicate boolean operator detected.'};
+  if(/\band\b|\bor\b/.test(n))return{ok:false,msg:'<strong>Syntax error:</strong> Boolean operators must be uppercase: <code>AND</code>, <code>OR</code> — not lowercase.'};
+  if(!n.match(/agent\.name:(WEB-APP01|WKS-RSCH01)/i)&&!n.includes('agent.name'))return{ok:false,msg:'<strong>Missing scope:</strong> Always start with <code>agent.name:WEB-APP01</code> or <code>agent.name:WKS-RSCH01</code> to scope your search to one host.'};
+  return{ok:true};
+}
+
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// Validate and give feedback — no results (student runs in real Wazuh)
+window.runQ=function(btn){
+  var qb=btn.closest('.query-block');
+  var inp=qb.querySelector('.query-input');
+  var errEl=qb.querySelector('.qb-err');
+  var okEl=qb.querySelector('.qb-ok');
+  var raw=inp.value;
+  var v=validateKQL(raw);
+  if(!v.ok){
+    errEl.innerHTML=v.msg;
+    errEl.style.display='block';
+    inp.className='query-input qi-err';
+    if(okEl)okEl.style.display='none';
+    return;
+  }
+  errEl.style.display='none';
+  inp.className='query-input qi-ok';
+  if(okEl){
+    okEl.style.display='block';
+  }
+};
+
+// Block paste on all query inputs
+document.addEventListener('paste',function(e){
+  if(e.target&&e.target.classList.contains('query-input')){
+    e.preventDefault();
+    var inp=e.target;
+    var qb=inp.closest('.query-block');
+    if(qb){
+      var errEl=qb.querySelector('.qb-err');
+      if(errEl){
+        errEl.innerHTML='<strong>No pasting allowed.</strong> You must type the query yourself — that\'s how you learn the syntax.';
+        errEl.style.display='block';
+        inp.className='query-input qi-err';
+        setTimeout(function(){
+          if(errEl.style.display==='block'&&errEl.innerHTML.includes('pasting')){
+            errEl.style.display='none';
+            inp.className='query-input';
+          }
+        },3000);
+      }
+    }
+  }
+},true);
+
+window.toggleHint=function(btn){
+  var hc=btn.nextElementSibling;
+  if(hc){var v=hc.classList.toggle('hc-vis');btn.textContent=(v?'Hide hint':'Show hint');}
+};
+
+// ═══════════════════════════════════
+// SCENARIO DATA
+// ═══════════════════════════════════
+var SCENARIOS=[
+{id:0,title:"SSH Brute-Force Detection",badge:"SSH Brute Force",bc:"sc-badge-red",mitre:["T1110.001"],target:"WEB-APP01",desc:"Find the attacker IP, the compromised account, and the exact timestamp of first access.",
+uisteps:[
+  {n:1,t:"Open Security Events",b:"In the Wazuh left sidebar click <strong>Modules → Security Events</strong>.",p:"Wazuh → Modules → Security Events"},
+  {n:2,t:"Set time range",b:"Click the <strong>clock icon</strong> top-right. Select <strong>Last 24 hours</strong> — training data was injected recently.",p:"Top right → Time picker → Last 24 hours"},
+  {n:3,t:"Type your query in the KQL bar",b:"Click the search bar at the top of the results. Type your query and press <strong>Enter</strong>. Do not paste — type it out.",p:"KQL bar → type → Enter"},
+  {n:4,t:"Expand a log entry",b:"Click the <strong>▶ arrow</strong> on any result row to see every field. Find <code>data.srcip</code> and <code>data.dstuser</code> this way.",p:"Row → ▶ arrow → scroll fields"}
+],
+kqlref:[["agent.name:WEB-APP01","Scope to WEB-APP01 only"],["rule.id:5710","SSH brute-force detected"],["rule.id:5715","SSH auth success after failures"],["data.srcip:X.X.X.X","Filter by source IP"],["rule.groups:authentication_failed","All auth failure events"]],
+mitreref:[{id:"T1110.001",name:"Brute Force: Password Guessing",sub:"T1110.001",desc:"Attacker systematically tries passwords against SSH. Multiple rule 5710 alerts from one IP followed by a single 5715 is the signature of a successful brute-force."}],
+steps:[
+{type:"intro",title:"Scenario 1: SSH Brute-Force on WEB-APP01",body:"An external attacker brute-forced SSH on WEB-APP01. Run: <strong>docker logs log-injector</strong> in PowerShell to get your attacker IP first. Then use the queries below — type each one in your real Wazuh at https://localhost.",
+queries:[
+{label:"Find all SSH brute-force alerts on WEB-APP01",hint:"Combine agent.name:WEB-APP01 with rule.id:5710 using AND. Rule 5710 fires on every brute-force SSH attempt.",where:"Security Events → KQL bar",lookfor:"Multiple rows all with the same source IP in data.srcip. That repeated IP is your attacker.",sol:"agent.name:WEB-APP01 AND rule.id:5710"},
+{label:"Find the successful SSH login event",hint:"Rule 5715 fires when auth succeeds after prior failures. Use agent.name:WEB-APP01 AND rule.id:5715",where:"Security Events → KQL bar",lookfor:"Exactly one result. data.dstuser shows the compromised account. The timestamp is your initial access time.",sol:"agent.name:WEB-APP01 AND rule.id:5715"},
+{label:"Pivot — find ALL events from the attacker IP",hint:"Replace X.X.X.X with the actual attacker IP you found in docker logs. Use data.srcip field.",where:"Security Events → KQL bar",lookfor:"Full attack timeline — failures then one success. All from the attacker IP.",sol:"agent.name:WEB-APP01 AND data.srcip:X.X.X.X"},
+{label:"Find all failed auth events using a rule group",hint:"Use rule.groups:authentication_failed instead of a rule ID. Combine with agent.name:WEB-APP01",where:"Security Events → KQL bar",lookfor:"Same brute-force events filtered by group — useful when you do not know the exact rule number.",sol:"agent.name:WEB-APP01 AND rule.groups:authentication_failed"}
+]},
+{type:"question",qtype:"LIVE",q:"In your live Wazuh results for rule.id:5710 — what is the field name containing the attacker's source IP?",qlive:"Run agent.name:WEB-APP01 AND rule.id:5710 in your live Wazuh. Expand a result row and find the field holding the attacker IP address.",choices:["A. data.dstuser","B. data.srcip","C. rule.description","D. agent.name"],correct:1,fb:{y:"Correct. data.srcip is the source IP field on all Wazuh SSH events. In the real Wazuh UI you can hover over this field in the expanded view and click + to add it as a column.",n:"Open a result in your live Wazuh, expand it, and scroll through the fields — find the one holding an IP address value like an external IP."}},
+{type:"question",qtype:"LIVE",q:"What Wazuh rule ID fires when SSH authentication SUCCEEDS after prior failures?",qlive:"Run agent.name:WEB-APP01 AND rule.id:5715 in your live Wazuh. Does it return exactly one result confirming a successful login?",choices:["A. 5710","B. 5700","C. 5715","D. 5703"],correct:2,fb:{y:"Correct. Rule 5710 = brute-force pattern detected. Rule 5715 = authentication success after failures. Together they prove the full attack chain in Wazuh.",n:"Try running rule.id:5715 on WEB-APP01 in your live Wazuh — if it returns one result showing a login success, that confirms which rule fires."}},
+{type:"question",qtype:"MITRE",q:"What MITRE ATT&CK technique ID describes automated password guessing against an SSH service?",qlive:"No query needed. Review the MITRE mapping shown above.",choices:["A. T1078.001","B. T1110.001","C. T1021.004","D. T1110.003"],correct:1,fb:{y:"Correct. T1110.001 = Brute Force: Password Guessing. T1110.003 = Password Spraying (few passwords across many accounts — different pattern).",n:"T1110 is the parent technique for Brute Force. The .001 sub-technique is Password Guessing — many passwords tried against one specific account."}}
+]},
+{id:1,title:"Named Pipe Privilege Escalation",badge:"Priv Esc",bc:"sc-badge-amber",mitre:["T1134.001"],target:"WKS-RSCH01",desc:"Find the named pipe, the malicious binary, and the registry persistence key.",
+uisteps:[
+  {n:1,t:"Navigate to WKS-RSCH01 agent",b:"Click <strong>Agents</strong> in the left sidebar. Find and click <strong>WKS-RSCH01</strong>. Then click <strong>Security Events</strong>.",p:"Wazuh → Agents → WKS-RSCH01 → Security Events"},
+  {n:2,t:"Filter Sysmon Event ID 17",b:"Type <code>data.win.system.eventID:17</code> in the KQL bar. This filters for Pipe Created events.",p:"KQL bar → data.win.system.eventID:17"},
+  {n:3,t:"Expand a result to find the pipe name",b:"Click <strong>▶</strong> on a result. Look for <code>data.win.eventdata.pipeName</code> and <code>data.win.eventdata.image</code> in the expanded fields.",p:"Row → ▶ → data.win.eventdata.pipeName"}
+],
+kqlref:[["data.win.system.eventID:17","Sysmon: Pipe Created"],["data.win.system.eventID:18","Sysmon: Pipe Connected"],["data.win.system.eventID:13","Sysmon: Registry Value Set"],["data.win.eventdata.pipeName:*","Any event with a pipe name"],["data.win.eventdata.targetObject:*XXXX*","Registry keys by partial service name"]],
+mitreref:[{id:"T1134.001",name:"Access Token Manipulation: Token Impersonation/Theft",sub:"T1134.001",desc:"Malicious binary creates a named pipe. A SYSTEM-level process connects to it. Attacker steals the SYSTEM token. Event ID 17 = trap set, Event ID 18 = SYSTEM walks into it."}],
+steps:[
+{type:"intro",title:"Scenario 2: Named Pipe Privilege Escalation on WKS-RSCH01",body:"A dropper is creating named pipes to steal a SYSTEM token. Use Sysmon Event IDs 17 and 18 to trace it, then find the registry persistence key. Type each query in your live Wazuh.",
+queries:[
+{label:"Find pipe creation events on WKS-RSCH01",hint:"Combine agent.name:WKS-RSCH01 with data.win.system.eventID:17 using AND.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"Expand a result. data.win.eventdata.pipeName shows the pipe path. data.win.eventdata.image shows what created it. Note the 4-letter service code in the pipe name.",sol:"agent.name:WKS-RSCH01 AND data.win.system.eventID:17"},
+{label:"Find which SYSTEM process connected to the pipe",hint:"Change event ID to 18. Same host.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"data.win.eventdata.image shows a SYSTEM process like services.exe. data.win.eventdata.user shows NT AUTHORITY\\SYSTEM. Token steal confirmed.",sol:"agent.name:WKS-RSCH01 AND data.win.system.eventID:18"},
+{label:"Wildcard — catch all pipe events on this host",hint:"Use data.win.eventdata.pipeName:* as a catch-all on agent WKS-RSCH01.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"Both Event ID 17 and 18 in one view — the full pipe lifecycle.",sol:"agent.name:WKS-RSCH01 AND data.win.eventdata.pipeName:*"},
+{label:"Find the registry persistence key — replace SVCNAME with the 4-letter service name you found in the pipe name",hint:"Look at your pipe name results (e.g. \\pipe\\MXTV_7731). The part before the underscore (MXTV) is the service name. Use data.win.eventdata.targetObject:*MXTV* with YOUR service name.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"Event ID 13, registry path under HKLM\\System\\CurrentControlSet\\Services\\. The details field shows what the service points to.",sol:"agent.name:WKS-RSCH01 AND data.win.eventdata.targetObject:*SVCNAME*"}
+]},
+{type:"question",qtype:"LIVE",q:"Which Sysmon Event ID captures a named pipe being CREATED on a Windows host?",qlive:"Run agent.name:WKS-RSCH01 AND data.win.system.eventID:17 in your live Wazuh. Confirm it returns results with pipe names in the data.win.eventdata.pipeName field.",choices:["A. Event ID 1","B. Event ID 13","C. Event ID 17","D. Event ID 18"],correct:2,fb:{y:"Correct. Event ID 17 = Pipe Created (attacker sets trap). Event ID 18 = Pipe Connected (SYSTEM walks in). You need both to prove the full impersonation.",n:"Run the Event ID 17 query in your live Wazuh and confirm it returns pipe creation events with pipeName populated."}},
+{type:"question",qtype:"LIVE",q:"In your live Wazuh Event ID 17 results — what field holds the pipe name?",qlive:"Expand an Event ID 17 result in your live Wazuh. Scroll through expanded fields and find the one starting with \\pipe\\",choices:["A. data.win.eventdata.image","B. data.win.eventdata.pipeName","C. data.win.eventdata.targetObject","D. data.win.eventdata.commandLine"],correct:1,fb:{y:"Correct. data.win.eventdata.pipeName contains the pipe path. In real Wazuh UI you can add this as a column to see all pipe names across events at once.",n:"Expand an Event ID 17 result in your live Wazuh and look for the field showing a value starting with \\pipe\\."}},
+{type:"question",qtype:"MITRE",q:"What MITRE ATT&CK technique ID maps to stealing a SYSTEM token via named pipe impersonation?",qlive:"No query needed. Review the MITRE mapping above.",choices:["A. T1055.001","B. T1059.003","C. T1134.001","D. T1543.003"],correct:2,fb:{y:"Correct. T1134.001 = Access Token Manipulation: Token Impersonation/Theft. Malicious pipe + SYSTEM connects + attacker steals token.",n:"T1134 covers Access Token Manipulation. The .001 sub-technique is specifically Token Impersonation/Theft via named pipes."}}
+]},
+{id:2,title:"Malicious Macro and Dropper",badge:"Macro / Dropper",bc:"sc-badge-amber",mitre:["T1059.005","T1204.002"],target:"WKS-RSCH01",desc:"Trace the execution chain from WINWORD.EXE through VBA macro to the dropped executable.",
+uisteps:[
+  {n:1,t:"Stay on WKS-RSCH01 Security Events",b:"Make sure you are scoped to WKS-RSCH01. Check the agent name in the page header.",p:"Agents → WKS-RSCH01 → Security Events"},
+  {n:2,t:"Filter for Word child processes",b:"Type <code>data.win.eventdata.parentImage:*WINWORD*</code> to catch anything Microsoft Word spawned.",p:"KQL bar → data.win.eventdata.parentImage:*WINWORD*"},
+  {n:3,t:"Read the parent-child relationship",b:"Expand an Event ID 1 result. <code>parentImage</code> = Word. <code>image</code> = the dropper binary spawned by the macro.",p:"Event ID 1 → parentImage vs image fields"}
+],
+kqlref:[["data.win.system.eventID:1","Sysmon: Process Create (parent-child)"],["data.win.system.eventID:11","Sysmon: File Create"],["data.win.eventdata.parentImage:*WINWORD*","Processes spawned by Word"],["data.win.eventdata.targetFilename:*Public*","Files written to Public folder"],["data.win.eventdata.image:*DROPPER*","All events for the dropper binary"]],
+mitreref:[
+  {id:"T1059.005",name:"Visual Basic",sub:"T1059.005",desc:"VBA macro in a Word document executes code. WINWORD.EXE as parent of any unexpected process is the indicator."},
+  {id:"T1204.002",name:"Malicious File",sub:"T1204.002",desc:"Requires the user to open the phishing document. Always pairs with T1059.005 for the full initial access picture."}
+],
+steps:[
+{type:"intro",title:"Scenario 3: Malicious Macro Execution on WKS-RSCH01",body:"A domain user opened a phishing document. The VBA macro dropped an executable to the Public folder. Use Sysmon Event IDs 1 and 11 to trace the chain. Type each query in your live Wazuh.",
+queries:[
+{label:"Find all processes spawned by Microsoft Word",hint:"Filter data.win.eventdata.parentImage:*WINWORD* on agent WKS-RSCH01. Any child of WINWORD.EXE is suspicious.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"Event ID 1 with WINWORD.EXE as parentImage. The image field shows the dropper binary name — note it.",sol:"agent.name:WKS-RSCH01 AND data.win.eventdata.parentImage:*WINWORD*"},
+{label:"Find the file dropped to the Public folder",hint:"Combine Event ID 11 with data.win.eventdata.targetFilename:*Public* on WKS-RSCH01.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"data.win.eventdata.targetFilename shows the full path where the dropper was copied. data.win.eventdata.image shows which process wrote it.",sol:"agent.name:WKS-RSCH01 AND data.win.system.eventID:11 AND data.win.eventdata.targetFilename:*Public*"},
+{label:"Trace all events for the dropper — replace DNAME with the exact binary name from your Event ID 1 results",hint:"Use data.win.eventdata.image with a wildcard around the dropper filename you identified above.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"Multiple event types (1, 11, 17, 3) all involving the same binary — the full lifecycle from execution to exfiltration.",sol:"agent.name:WKS-RSCH01 AND data.win.eventdata.image:*DNAME*"}
+]},
+{type:"question",qtype:"LIVE",q:"In your live Wazuh results — which Sysmon Event ID captures WINWORD.EXE spawning the dropper?",qlive:"Run agent.name:WKS-RSCH01 AND data.win.eventdata.parentImage:*WINWORD* in your live Wazuh. What event ID appears in results?",choices:["A. Event ID 3","B. Event ID 1","C. Event ID 11","D. Event ID 17"],correct:1,fb:{y:"Correct. Sysmon Event ID 1 = Process Create. It records both the process (image) and its parent (parentImage). WINWORD.EXE as parent is definitive proof of macro execution.",n:"Run the parentImage:*WINWORD* query in live Wazuh and look at what data.win.system.eventID value appears in results."}},
+{type:"question",qtype:"LIVE",q:"In live Wazuh — what field shows which process CREATED the currently running process?",qlive:"Expand an Event ID 1 result in live Wazuh. Find the field showing the path to WINWORD.EXE.",choices:["A. data.win.eventdata.image","B. data.win.eventdata.parentCommandLine","C. data.win.eventdata.parentImage","D. data.win.eventdata.user"],correct:2,fb:{y:"Correct. data.win.eventdata.parentImage is the parent process path. In Wazuh UI you can hover over this field and click + to filter by it directly from an expanded log entry.",n:"Expand an Event ID 1 result in live Wazuh and find the field that shows WINWORD.EXE — that field name is your answer."}},
+{type:"question",qtype:"MITRE",q:"What MITRE technique ID maps specifically to VBA macro execution in a Microsoft Office document?",qlive:"No query needed. VBA stands for Visual Basic for Applications.",choices:["A. T1059.001 (PowerShell)","B. T1059.003 (Windows Command Shell)","C. T1059.005 (Visual Basic)","D. T1059.007 (JavaScript)"],correct:2,fb:{y:"Correct. T1059.005 = Visual Basic. VBA macros in Office documents are Command and Scripting Interpreter: Visual Basic. T1059.001 = PowerShell, T1059.003 = cmd.exe.",n:"VBA = Visual Basic for Applications. T1059 covers scripting interpreters. The .005 sub-technique is specifically Visual Basic."}}
+]},
+{id:3,title:"Apache Rootkit Detection",badge:"Rootkit",bc:"sc-badge-red",mitre:["T1014","T1543.002"],target:"WEB-APP01",desc:"Use Wazuh FIM and Linux audit logs to detect a rogue Apache module and credential harvest file.",
+uisteps:[
+  {n:1,t:"Open Integrity Monitoring for WEB-APP01",b:"Click <strong>Agents → WEB-APP01 → Integrity Monitoring</strong>. This is separate from Security Events and shows only FIM alerts.",p:"Agents → WEB-APP01 → Integrity Monitoring"},
+  {n:2,t:"Filter new files with rule 554",b:"Type <code>rule.id:554</code> in the KQL bar. Look at <code>syscheck.path</code> to see what was created and where.",p:"KQL bar → rule.id:554 → read syscheck.path"},
+  {n:3,t:"Switch to Security Events for audit logs",b:"Go to <strong>Security Events</strong> on WEB-APP01. Linux auditd events appear here. Filter <code>data.audit.command:apxs</code> to find the compile event.",p:"WEB-APP01 → Security Events → data.audit.command:apxs"}
+],
+kqlref:[["rule.id:554","FIM: new file added to monitored path"],["rule.id:550","FIM: file checksum changed"],["syscheck.path:*apache2*","FIM events in Apache directories"],["data.audit.command:apxs","Linux audit: Apache compiler run"],["syscheck.path:*FILENAME*","FIM: find a file by partial name"]],
+mitreref:[
+  {id:"T1014",name:"Rootkit",sub:"T1014",desc:"Compiled Apache module loaded into the running web server. Malicious code hides inside a legitimate process — no suspicious separate process appears in the process list."},
+  {id:"T1543.002",name:"Create or Modify System Process",sub:"T1543.002",desc:"The module auto-loads when Apache starts — persistence across reboots without a separate scheduled task or service entry."}
+],
+steps:[
+{type:"intro",title:"Scenario 4: Rogue Apache Module on WEB-APP01",body:"The compromised deploy account compiled a rogue Apache module and a credential harvest file. Use Wazuh FIM and Linux audit logs to find both artifacts. Type each query in your live Wazuh.",
+queries:[
+{label:"Find all new files detected by FIM on WEB-APP01",hint:"Use agent.name:WEB-APP01 AND rule.id:554. Navigate to Integrity Monitoring first, not Security Events.",where:"Agents → WEB-APP01 → Integrity Monitoring → KQL bar",lookfor:"Two new files in syscheck.path — one .so file under /etc/apache2/mods-enabled/ and one small file under /var/www/html/.",sol:"agent.name:WEB-APP01 AND rule.id:554"},
+{label:"Scope FIM results to Apache directories only",hint:"Use syscheck.path:*apache2* wildcard on agent WEB-APP01.",where:"Agents → WEB-APP01 → Integrity Monitoring → KQL bar",lookfor:"The rogue .so module full path. syscheck.md5_after gives you the hash. syscheck.size_after shows the file size.",sol:"agent.name:WEB-APP01 AND syscheck.path:*apache2*"},
+{label:"Find the apxs compile command in audit logs",hint:"Switch to Security Events. Use data.audit.command:apxs on agent WEB-APP01.",where:"Agents → WEB-APP01 → Security Events → KQL bar",lookfor:"One result. data.audit.auid shows who ran it. data.audit.execve.a2 shows the full compile command including module source filename.",sol:"agent.name:WEB-APP01 AND data.audit.command:apxs"},
+{label:"Find the credential harvest file — replace FNAME with the filename you saw in the FIM results above",hint:"Use syscheck.path with a wildcard around the credential filename you saw in the rule 554 results.",where:"Agents → WEB-APP01 → Integrity Monitoring → KQL bar",lookfor:"One FIM result showing when the credential file was created and its hash.",sol:"agent.name:WEB-APP01 AND syscheck.path:*FNAME*"}
+]},
+{type:"question",qtype:"LIVE",q:"In Wazuh Integrity Monitoring — which rule ID fires when a NEW file is added to a monitored directory?",qlive:"Run agent.name:WEB-APP01 AND rule.id:554 in Integrity Monitoring. Confirm results show syscheck.path fields for newly created files.",choices:["A. Rule 550","B. Rule 554","C. Rule 591","D. Rule 5710"],correct:1,fb:{y:"Correct. Rule 554 = File added to the system. Rule 550 = File checksum changed (existing file was modified). Both come from Wazuh FIM and appear under Integrity Monitoring.",n:"Run rule.id:554 in Integrity Monitoring and confirm it returns newly added files in syscheck.path."}},
+{type:"question",qtype:"LIVE",q:"In your live Wazuh FIM results — what field contains the full path of a flagged file?",qlive:"Run agent.name:WEB-APP01 AND rule.id:554 in Integrity Monitoring. Look at the column headers for the one showing Linux file paths.",choices:["A. data.file.path","B. syscheck.path","C. data.audit.file","D. file.target"],correct:1,fb:{y:"Correct. syscheck.path is the FIM file path field. In real Wazuh UI you can add it as a column to see all flagged paths at a glance.",n:"Look at the column headers in your Integrity Monitoring results — find the one showing full Linux paths like /etc/apache2/..."}},
+{type:"question",qtype:"MITRE",q:"What MITRE technique ID describes loading malicious code inside a legitimate running service like Apache?",qlive:"No query needed. The rootkit hides inside Apache — it is not a separate visible process.",choices:["A. T1505.003","B. T1014","C. T1543.002","D. T1059.004"],correct:1,fb:{y:"Correct. T1014 = Rootkit. Code compiled into a shared library and hidden inside a legitimate process. T1505.003 = Web Shell — a related but different technique.",n:"A compiled module that hides malicious code inside a running service = T1014 Rootkit. T1505.003 is a Web Shell — different delivery mechanism."}}
+]},
+{id:4,title:"Data Staging and Exfiltration",badge:"Exfiltration",bc:"sc-badge-red",mitre:["T1560.001","T1041"],target:"WKS-RSCH01 → C2",desc:"Trace 7-Zip archive creation, file staging, and the outbound C2 network connection.",
+uisteps:[
+  {n:1,t:"Navigate to WKS-RSCH01 Security Events",b:"Click <strong>Agents → WKS-RSCH01 → Security Events</strong>.",p:"Agents → WKS-RSCH01 → Security Events"},
+  {n:2,t:"Find 7-Zip execution",b:"Filter Event ID 1 with image:*7z*. Expand the result and read the full <strong>commandLine</strong> field — it shows archive path and source data.",p:"Event ID 1 + image:*7z* → read commandLine"},
+  {n:3,t:"Build the timeline",b:"Sort results ascending by timestamp. Confirm: Event 1 (tool runs) → Event 11 (file written) → Event 3 (data leaves). That is your exfil chain.",p:"Sort ascending → confirm 1 → 11 → 3 sequence"}
+],
+kqlref:[["data.win.system.eventID:3","Sysmon: Network connection outbound"],["data.win.eventdata.destinationIp:IP","Filter by C2 destination IP"],["data.win.eventdata.destinationPort:PORT","Filter by exfil port"],["data.win.eventdata.image:*7z*","7-Zip process events"],["data.win.eventdata.targetFilename:*ARCHIVE*","Archive file creation by name"]],
+mitreref:[
+  {id:"T1560.001",name:"Archive via Utility",sub:"T1560.001",desc:"7-Zip used with -p (password) flag compresses and encrypts data. Password prevents content inspection by network security tools during transit."},
+  {id:"T1041",name:"Exfiltration Over C2 Channel",sub:"T1041",desc:"Archive sent to attacker C2 server over a non-standard port. High ports (4443, 9443 etc.) blend with HTTPS traffic and bypass firewall rules targeting port 443 only."}
+],
+steps:[
+{type:"intro",title:"Scenario 5: Data Staging and Exfiltration on WKS-RSCH01",body:"Sensitive documents were archived with 7-Zip and sent to the attacker C2 server. Trace the chain using Sysmon Event IDs 1 → 11 → 3. Type each query in your live Wazuh.",
+queries:[
+{label:"Find 7-Zip execution on WKS-RSCH01",hint:"Combine agent.name:WKS-RSCH01, data.win.system.eventID:1, and data.win.eventdata.image:*7z* using AND.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"Expand the result. Read data.win.eventdata.commandLine — it shows the full 7-Zip command including the output archive path and source data path.",sol:"agent.name:WKS-RSCH01 AND data.win.system.eventID:1 AND data.win.eventdata.image:*7z*"},
+{label:"Find the archive file on disk — replace ANAME with the .7z filename you saw in the commandLine above",hint:"Combine Event ID 11 with data.win.eventdata.targetFilename:*ARCHIVE* where ARCHIVE is the filename you found above.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"Confirms the archive was written to disk. Note the creationUtcTime — this is when data staging completed.",sol:"agent.name:WKS-RSCH01 AND data.win.system.eventID:11 AND data.win.eventdata.targetFilename:*ANAME*"},
+{label:"Find outbound connections to the C2 server — replace ATTACKER_IP with the IP from Scenario 1",hint:"Combine Event ID 3 with data.win.eventdata.destinationIp: and the attacker IP from Scenario 1.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"Two results — dropper and 7-Zip both connecting to the C2. data.win.eventdata.destinationPort shows the exfil port.",sol:"agent.name:WKS-RSCH01 AND data.win.system.eventID:3 AND data.win.eventdata.destinationIp:ATTACKER_IP"},
+{label:"Find all traffic on the exfil port — replace PORT with the port number from above",hint:"Combine Event ID 3 with data.win.eventdata.destinationPort: and the port you just found.",where:"Agents → WKS-RSCH01 → Security Events → KQL bar",lookfor:"All processes using that port. Confirms the dropper and 7-Zip both exfiltrated to the same destination.",sol:"agent.name:WKS-RSCH01 AND data.win.system.eventID:3 AND data.win.eventdata.destinationPort:PORT"}
+]},
+{type:"question",qtype:"LIVE",q:"Which Sysmon Event ID captures an outbound network connection made by a process?",qlive:"Run the Event ID 3 query in your live Wazuh with the attacker IP from Scenario 1. Confirm you get network connection results.",choices:["A. Event ID 1","B. Event ID 3","C. Event ID 11","D. Event ID 13"],correct:1,fb:{y:"Correct. Sysmon Event ID 3 = Network Connection. It captures the process, destination IP, destination port, and protocol. Essential for detecting C2 callbacks and data exfiltration.",n:"Run the network connection query in live Wazuh and confirm Event ID 3 captures outbound connections with destinationIp and destinationPort fields."}},
+{type:"question",qtype:"LIVE",q:"In your live Wazuh Event ID 3 results — what field shows the port number the connection was made TO?",qlive:"Expand an Event ID 3 result in live Wazuh. Find the field holding a port number.",choices:["A. data.win.eventdata.destinationIp","B. data.win.eventdata.sourcePort","C. data.win.eventdata.destinationPort","D. data.win.eventdata.networkPort"],correct:2,fb:{y:"Correct. data.win.eventdata.destinationPort holds the destination port. In Wazuh UI you can add this as a column to see port numbers across all network events at a glance.",n:"Expand an Event ID 3 result in your live Wazuh and find the field containing a 4-5 digit port number."}},
+{type:"question",qtype:"MITRE",q:"What MITRE technique ID describes using 7-Zip with a password flag to compress data before exfiltration?",qlive:"No query needed. The -p flag adds password encryption to the archive.",choices:["A. T1041","B. T1074.001","C. T1560.001","D. T1005"],correct:2,fb:{y:"Correct. T1560.001 = Archive Collected Data: Archive via Utility. T1041 is the next step — actually transmitting the archive over the C2 channel.",n:"T1560 covers the archiving step. The .001 sub-technique is Archive via Utility (7-Zip, WinRAR, tar). T1041 is what happens when the archive is transmitted."}}
+]}
+];
+
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+var curView='home',curSc=-1,curStep=0,score=0,answered={},doneSc=new Set();
+var totalQ=SCENARIOS.reduce(function(a,s){return a+s.steps.filter(function(st){return st.type==='question';}).length;},0);
+
+function buildQB(q,i,total){
+  return '<div class="query-block">'+
+    '<div class="qb-task"><span>'+escH(q.label)+'</span><span class="qb-num">Query '+(i+1)+'/'+total+'</span></div>'+
+    '<div class="qb-where">Where to run: '+escH(q.where)+'</div>'+
+    '<button class="hint-btn" onclick="toggleHint(this)">Show hint</button>'+
+    '<div class="hint-content">'+escH(q.hint)+'</div>'+
+    '<div class="query-row">'+
+      '<textarea class="query-input" rows="2" placeholder="Type your KQL query here — no pasting allowed" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>'+
+      '<button class="run-btn" onclick="runQ(this)">&#9654; Validate</button>'+
+    '</div>'+
+    '<div class="no-paste-notice">Paste is disabled — type it out</div>'+
+    '<div class="qb-err"></div>'+
+    '<div class="qb-ok"><strong>&#10003; Valid KQL syntax.</strong> Now run this exact query in your live Wazuh at https://localhost<br><span class="now-run">What to look for: '+escH(q.lookfor)+'</span></div>'+
+  '</div>';
+}
+
+function buildWazuhSim(agent,queries){
+  return '<div class="wazuh-sim">'+
+    '<div class="wazuh-chrome"><span class="wdot" style="background:#ff5f57"></span><span class="wdot" style="background:#ffbd2e"></span><span class="wdot" style="background:#28c840"></span><span style="font-family:var(--mono);font-size:11px;color:#64748b;margin-left:10px">Wazuh SIEM — Live Environment</span></div>'+
+    '<div class="wazuh-topbar"><span class="wazuh-logo-text">WAZUH</span><span class="wazuh-slash"> / </span><span class="wazuh-path">https://localhost</span><span class="wazuh-live-chip">&#9679; LIVE</span><span class="wazuh-agent-chip">agent: '+escH(agent)+'</span></div>'+
+    '<div class="wazuh-tabs"><div class="wazuh-tab wt-active">Discover</div><div class="wazuh-tab">Security Events</div><div class="wazuh-tab">Integrity Monitoring</div></div>'+
+    '<div class="wazuh-body">'+queries.map(function(q,i){return buildQB(q,i,queries.length);}).join('')+'</div>'+
+  '</div>';
+}
+
+function buildKQLRef(rows){
+  return '<div class="kql-ref"><div class="kql-ref-header">KQL Quick Reference — This Scenario</div><table class="kql-table"><tbody>'+
+    rows.map(function(r){return '<tr><td>'+escH(r[0])+'</td><td>'+escH(r[1])+'</td></tr>';}).join('')+
+  '</tbody></table></div>';
+}
+
+function buildUIWalkthrough(steps){
+  return '<div class="ui-walkthrough"><div class="ui-wt-header">Wazuh UI Navigation — How to Get There</div>'+
+    steps.map(function(s){
+      return '<div class="ui-step"><div class="ui-step-num">'+s.n+'</div><div class="ui-step-body"><strong>'+escH(s.t)+'</strong><br>'+s.b+'<br><span class="ui-step-path">'+escH(s.p)+'</span></div></div>';
+    }).join('')+'</div>';
+}
+
+function buildMITRERef(refs){
+  return '<div class="mitre-ref"><div class="mitre-ref-title">MITRE ATT&CK Mapping — This Scenario</div>'+
+    refs.map(function(r){
+      return '<div class="mitre-row"><span class="mitre-id">'+escH(r.id)+'</span><div class="mitre-desc"><strong>'+escH(r.name)+'</strong> — '+escH(r.sub)+'<br>'+escH(r.desc)+'</div></div>';
+    }).join('')+'</div>';
+}
+
+function buildStepProg(sc){
+  var h='<div class="step-progress">';
+  sc.steps.forEach(function(st,i){
+    var cls=i<curStep?'sn-done':i===curStep?'sn-active':'';
+    var lbl=st.type==='intro'?'Briefing':'Q'+(sc.steps.slice(0,i).filter(function(x){return x.type==='question';}).length+1);
+    if(i>0)h+='<div class="step-line'+(i<=curStep?' sl-done':'')+'"></div>';
+    h+='<div class="step-node '+cls+'"><div class="step-circle">'+(i<curStep?'&#10003;':(i+1))+'</div><div class="step-node-label">'+lbl+'</div></div>';
+  });
+  return h+'</div>';
+}
+
+function showHome(){
+  curView='home';curSc=-1;updateSidebar();
+  var cards=SCENARIOS.map(function(s){
+    var isDone=doneSc.has(s.id);
+    var qDone=0;s.steps.forEach(function(st,si){if(st.type==='question'&&answered[(s.id+'-'+si)]!==undefined)qDone++;});
+    var qTot=s.steps.filter(function(st){return st.type==='question';}).length;
+    return '<div class="scenario-card'+(isDone?' sc-done':'')+'" onclick="startScenario('+s.id+')">'+
+      '<div class="sc-num">Scenario '+(s.id+1)+' of '+SCENARIOS.length+'</div>'+
+      '<div class="sc-title">'+escH(s.title)+'</div>'+
+      '<div><span class="sc-badge '+s.bc+'">'+escH(s.badge)+'</span></div>'+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--gray-400);margin-bottom:8px">'+s.mitre.join(' · ')+'</div>'+
+      '<div style="font-size:13px;color:var(--gray-500);margin-bottom:10px;line-height:1.5">'+escH(s.desc)+'</div>'+
+      '<div class="sc-footer"><span style="color:var(--gray-500);font-size:11px">'+qDone+'/'+qTot+' questions</span><span class="'+(isDone?'ss-done':'ss-start')+'">'+(isDone?'&#10003; Complete':'Start &rarr;')+'</span></div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('main-content').innerHTML=
+    '<div class="home-hero">'+
+      '<div class="hh-eyebrow">Live Wazuh Environment · Real Log Data · Randomized IoCs</div>'+
+      '<div class="hh-title">Threat Hunting<br>Live Lab</div>'+
+      '<div class="hh-sub">Hunt through real Wazuh alerts. Type every KQL query yourself — no pasting. Every session has fresh randomized IoC values.</div>'+
+      '<div class="setup-steps">'+
+        '<div class="setup-step"><div class="ss-num">1</div><div class="ss-body"><strong>Confirm lab is running.</strong> Open PowerShell: <span class="ss-code">docker ps</span> — you should see wazuh-manager, wazuh-indexer, wazuh-dashboard.</div></div>'+
+        '<div class="setup-step"><div class="ss-num">2</div><div class="ss-body"><strong>Get your session IoC values.</strong> Run: <span class="ss-code">docker logs log-injector</span> — note the attacker IP, username, dropper name, and other values.</div></div>'+
+        '<div class="setup-step"><div class="ss-num">3</div><div class="ss-body"><strong>Open Wazuh Dashboard.</strong> Go to <span class="ss-code">https://localhost</span> — login: admin / SecretPassword. Accept the SSL warning.</div></div>'+
+        '<div class="setup-step"><div class="ss-num">4</div><div class="ss-body"><strong>Start a scenario below.</strong> Type every KQL query from scratch. Validate syntax here, then run it in your live Wazuh to find the real answers.</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="scenario-grid">'+cards+'</div>';
+}
+
+function startScenario(id){curSc=id;curStep=0;curView='scenario';updateSidebar();renderStep();}
+
+function renderStep(){
+  var sc=SCENARIOS[curSc];var st=sc.steps[curStep];
+  var qTot=sc.steps.filter(function(x){return x.type==='question';}).length;
+  var inner='<div class="page-header">'+
+    '<div class="ph-eyebrow">Scenario '+(curSc+1)+' of '+SCENARIOS.length+' — Live Lab</div>'+
+    '<div class="ph-title">'+escH(sc.title)+'</div>'+
+    '<div class="ph-sub">'+escH(sc.desc)+'</div>'+
+    '<div class="ph-meta">'+
+      sc.mitre.map(function(m){return '<span class="mitre-chip">'+m+'</span>';}).join('')+
+      '<span class="ph-tag">&#128196; '+escH(sc.target)+'</span>'+
+    '</div></div>';
+  inner+=buildStepProg(sc);
+
+  if(st.type==='intro'){
+    inner+='<div class="card">'+
+      '<div class="card-header"><div class="card-title">'+escH(st.title)+'</div><span class="step-pill">Briefing — Step 1 of '+sc.steps.length+'</span></div>'+
+      '<div class="card-body">'+st.body.replace(/\n/g,'<br>')+'</div></div>'+
+      buildUIWalkthrough(sc.uisteps)+
+      buildMITRERef(sc.mitreref)+
+      buildKQLRef(sc.kqlref)+
+      buildWazuhSim(sc.target,st.queries)+
+      '<div class="action-row"><button class="btn btn-primary" onclick="nextStep()">Continue to questions &rarr;</button><button class="btn" onclick="showHome()">Back to dashboard</button></div>';
+  } else {
+    var key=curSc+'-'+curStep;var ans=answered[key];
+    var qIdx=sc.steps.slice(0,curStep).filter(function(x){return x.type==='question';}).length+1;
+    var isMitre=st.qtype==='MITRE';
+
+    // Left panel — mini typing terminal for live questions, or MITRE ref for MITRE questions
+    var leftPanel=!isMitre?
+      '<div class="wazuh-sim">'+
+        '<div class="wazuh-chrome"><span class="wdot" style="background:#ff5f57"></span><span class="wdot" style="background:#ffbd2e"></span><span class="wdot" style="background:#28c840"></span><span style="font-family:var(--mono);font-size:11px;color:#64748b;margin-left:10px">Wazuh / Live</span></div>'+
+        '<div class="wazuh-topbar"><span class="wazuh-logo-text">WAZUH</span><span class="wazuh-slash"> / </span><span class="wazuh-path">https://localhost</span><span class="wazuh-live-chip">&#9679; LIVE</span></div>'+
+        '<div class="wazuh-body"><div class="query-block">'+
+          '<div class="qb-task">Type and validate your query — then run it in live Wazuh</div>'+
+          '<div style="font-family:var(--mono);font-size:11px;color:#7dd3fc;background:#0a2040;border:1px solid rgba(56,189,248,0.2);border-radius:5px;padding:8px 10px;margin-bottom:8px;line-height:1.6">'+escH(st.qlive)+'</div>'+
+          '<div class="query-row">'+
+            '<textarea class="query-input" rows="2" placeholder="Type KQL query..." spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>'+
+            '<button class="run-btn" onclick="runQ(this)">&#9654; Validate</button>'+
+          '</div>'+
+          '<div class="no-paste-notice">Paste is disabled — type it out</div>'+
+          '<div class="qb-err"></div>'+
+          '<div class="qb-ok"><strong>&#10003; Valid KQL syntax.</strong> Now copy this into your live Wazuh at https://localhost<br><span style="font-family:var(--mono);font-size:11px;color:#475569;margin-top:4px;display:block">Open Wazuh → run query → read the results → then answer the question</span></div>'+
+        '</div></div>'+
+      '</div>' :
+      buildMITRERef(sc.mitreref);
+
+    var letters=['A','B','C','D'];
+    var choicesHtml=st.choices.map(function(c,i){
+      var cls='choice';
+      if(ans!==undefined){if(i===st.correct)cls+=' correct';else if(i===ans&&ans!==st.correct)cls+=' wrong';}
+      return '<button class="'+cls+'"'+(ans!==undefined?' disabled':'')+' onclick="answer('+i+')"><span class="choice-letter">'+letters[i]+'</span>'+escH(c)+'</button>';
+    }).join('');
+    var fbHtml=ans!==undefined?'<div class="feedback '+(ans===st.correct?'correct':'wrong')+'"><strong>'+(ans===st.correct?'&#10003; Correct.':'&#10007; Incorrect.')+'</strong> '+(ans===st.correct?st.fb.y:st.fb.n)+'</div>':'';
+    var isLast=curStep===sc.steps.length-1;
+    var nextBtns=ans!==undefined?'<div class="action-row">'+(!isLast?'<button class="btn btn-primary" onclick="nextStep()">Next question &rarr;</button>':'')+(isLast?'<button class="btn btn-primary" onclick="finishSc()">Complete scenario &#10003;</button>':'')+'<button class="btn" onclick="showHome()">Dashboard</button></div>':'<div class="action-row"><button class="btn" onclick="showHome()">Back to dashboard</button></div>';
+    var typeLabel=isMitre?'<span class="qc-type qc-type-mitre">MITRE ATT&CK</span>':'<span class="qc-type qc-type-live">Live Wazuh</span>';
+
+    inner+='<div class="alert-live-reminder">&#9679; Make sure your Wazuh lab is running at <strong>https://localhost</strong> before answering</div>'+
+    '<div class="split-layout">'+
+      '<div>'+leftPanel+'</div>'+
+      '<div><div class="question-card">'+
+        '<div class="qc-label"><span>Question '+qIdx+' of '+qTot+'</span>'+typeLabel+'</div>'+
+        '<div class="qc-text">'+escH(st.q)+'</div>'+
+        '<div class="choices">'+choicesHtml+'</div>'+
+        fbHtml+nextBtns+
+      '</div></div></div>';
+  }
+  document.getElementById('main-content').innerHTML=inner;
+  window.scrollTo(0,0);
+}
+
+function nextStep(){if(curStep<SCENARIOS[curSc].steps.length-1){curStep++;renderStep();}}
+function answer(i){
+  var key=curSc+'-'+curStep;
+  if(answered[key]!==undefined)return;
+  answered[key]=i;if(i===SCENARIOS[curSc].steps[curStep].correct)score++;
+  updateSidebar();renderStep();
+}
+function finishSc(){
+  doneSc.add(curSc);updateSidebar();
+  if(doneSc.size===SCENARIOS.length){showComplete();return;}
+  var next=-1;for(var i=curSc+1;i<SCENARIOS.length;i++){if(!doneSc.has(i)){next=i;break;}}
+  document.getElementById('main-content').innerHTML='<div class="card" style="text-align:center;padding:3rem">'+
+    '<div style="font-size:48px;margin-bottom:1rem">&#127881;</div>'+
+    '<div style="font-size:20px;font-weight:600;margin-bottom:8px">Scenario Complete</div>'+
+    '<div style="color:var(--gray-500);margin-bottom:1.5rem">Ready for the next one?</div>'+
+    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+      (next!==-1?'<button class="btn btn-primary" onclick="startScenario('+next+')">Start Scenario '+(next+1)+' &rarr;</button>':'')+
+      '<button class="btn" onclick="showHome()">Back to Dashboard</button>'+
+    '</div></div>';
+}
+function showComplete(){
+  var pct=Math.round(score/totalQ*100);
+  document.getElementById('main-content').innerHTML=
+    '<div class="complete-hero">'+
+      '<div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;margin-bottom:8px">Live Lab Complete</div>'+
+      '<div class="complete-score">'+score+'/'+totalQ+'</div>'+
+      '<div style="font-size:18px;opacity:0.85;margin-bottom:6px">'+pct+'%</div>'+
+      '<div style="opacity:0.7;font-size:14px">'+(pct>=80?'Strong performance in a real environment. You are ready.':pct>=60?'Good work — go back and re-run the queries you missed in live Wazuh.':'Return to the web trainer first, then come back to the live lab.')+'</div>'+
+    '</div>'+
+    '<div class="card"><div style="font-size:15px;font-weight:600;margin-bottom:10px;color:var(--gray-900)">Stop the lab when done</div>'+
+            '<div style="background:var(--code-bg);border-radius:8px;padding:12px 16px;font-family:var(--mono);font-size:12px;color:#4ade80;margin-bottom:10px">docker-compose down</div>'+
+      '<div style="font-size:13px;color:var(--gray-600)">Run <code style="font-family:var(--mono);font-size:11px;background:var(--gray-100);padding:1px 5px;border-radius:4px">setup.ps1</code> next time for fresh randomized IoC values.</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
+      '<button class="btn btn-primary" onclick="resetAll()">Restart Lab</button>'+
+      '<button class="btn" onclick="showHome()">Dashboard</button>'+
+    '</div>';
+}
+function showReference(){
+  updateSidebar();
+  var kqlRows=[["agent.name:WEB-APP01","Scope to a specific host"],["rule.id:5710","SSH brute-force detected"],["rule.id:5715","SSH auth success after failures"],["rule.groups:authentication_failed","All auth failure events"],["data.srcip:IP","Source IP address"],["data.dstuser:USER","Destination username"],["rule.id:554","FIM: new file added"],["rule.id:550","FIM: file checksum changed"],["syscheck.path:*keyword*","FIM file path (wildcard)"],["data.audit.command:CMD","Linux audit command"],["data.audit.auid:USER","Linux audit user"],["data.win.system.eventID:1","Sysmon: Process Create"],["data.win.system.eventID:3","Sysmon: Network Connection"],["data.win.system.eventID:11","Sysmon: File Create"],["data.win.system.eventID:13","Sysmon: Registry Value Set"],["data.win.system.eventID:17","Sysmon: Named Pipe Created"],["data.win.system.eventID:18","Sysmon: Named Pipe Connected"],["data.win.eventdata.image:*TOOL*","Process executable path"],["data.win.eventdata.parentImage:*WORD*","Parent process path"],["data.win.eventdata.commandLine:*flag*","Full command line string"],["data.win.eventdata.targetFilename:*DIR*","File write destination"],["data.win.eventdata.pipeName:*","Named pipe (wildcard)"],["data.win.eventdata.targetObject:*SVC*","Registry key path"],["data.win.eventdata.destinationIp:IP","Outbound destination IP"],["data.win.eventdata.destinationPort:PORT","Outbound destination port"]];
+  var mitreRows=[["T1110.001","SSH brute-force password guessing"],["T1134.001","Named pipe token impersonation"],["T1059.005","VBA macro in Office document"],["T1204.002","User opens malicious file"],["T1014","Rootkit — code inside Apache"],["T1543.002","Persistence via module/service"],["T1560.001","Archive via 7-Zip utility"],["T1041","Exfiltration over C2 channel"]];
+  document.getElementById('main-content').innerHTML=
+    '<div class="page-header"><div class="ph-eyebrow">Reference</div><div class="ph-title">KQL + MITRE ATT&CK Reference</div><div class="ph-sub">Every field name, query pattern, and technique ID used in the live lab.</div></div>'+
+    '<div class="card"><div class="card-header"><div class="card-title">Wazuh KQL Fields</div></div>'+
+      '<div style="font-size:14px;color:var(--gray-600);margin-bottom:1rem">All queries: <strong>field:value</strong> syntax. Combine with <strong>AND</strong>. Use <strong>*</strong> for wildcards. Always scope with <code>agent.name</code> first.</div>'+
+      '<div class="kql-ref" style="margin-bottom:0"><table class="kql-table"><tbody>'+kqlRows.map(function(r){return '<tr><td>'+escH(r[0])+'</td><td>'+escH(r[1])+'</td></tr>';}).join('')+'</tbody></table></div>'+
+    '</div>'+
+    '<div class="card"><div class="card-header"><div class="card-title">MITRE ATT&CK Techniques</div></div>'+
+      '<div class="mitre-ref" style="border:none;padding:0;background:transparent">'+
+        mitreRows.map(function(r){return '<div class="mitre-row"><span class="mitre-id">'+escH(r[0])+'</span><div class="mitre-desc">'+escH(r[1])+'</div></div>';}).join('')+
+      '</div>'+
+    '</div>';
+}
+function resetAll(){score=0;answered={};doneSc=new Set();curSc=-1;curStep=0;updateSidebar();showHome();}
+function updateSidebar(){
+  var pct=totalQ>0?Math.round(score/totalQ*100):0;
+  document.getElementById('nav-score').textContent=score+' / '+totalQ;
+  document.getElementById('nav-pct').textContent=pct+'%';
+  document.getElementById('sb-pct').textContent=pct+'%';
+  document.getElementById('sb-fill').style.width=pct+'%';
+  var homeEl=document.getElementById('sb-home');
+  if(homeEl)homeEl.className='sidebar-item'+(curSc===-1?' active':'');
+  var sb=document.getElementById('sb-scenarios');if(!sb)return;
+  sb.innerHTML=SCENARIOS.map(function(s){
+    var isDone=doneSc.has(s.id),isActive=curSc===s.id;
+    var qDone=0;s.steps.forEach(function(st,si){if(st.type==='question'&&answered[(s.id+'-'+si)]!==undefined)qDone++;});
+    var qTot=s.steps.filter(function(st){return st.type==='question';}).length;
+    return '<div class="sidebar-item'+(isActive?' active':'')+(isDone?' done':'')+'" onclick="startScenario('+s.id+')">'+
+      '<div class="si-num">'+(isDone?'&#10003;':(s.id+1))+'</div>'+
+      '<div class="si-label"><div>'+escH(s.title)+'</div><div class="si-sub">'+qDone+'/'+qTot+' questions</div></div></div>';
+  }).join('');
+}
+updateSidebar();showHome();
+</script>
+</body>
+</html>
